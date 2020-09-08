@@ -1,0 +1,17 @@
+{
+    "sqltools.connections": [
+        {
+            "database": "mon_agence_dev",
+            "driver": "MySQL",
+            "mysqlOptions": {
+                "authProtocol": "default"
+            },
+            "name": "MySQL_Local_MAMP",
+            "password": "root",
+            "port": 3306,
+            "previewLimit": 50,
+            "server": "localhost",
+            "username": "root"
+        }
+    ]
+}
