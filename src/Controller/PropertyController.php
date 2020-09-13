@@ -7,9 +7,9 @@ use App\Entity\Property;
 use App\Form\ContactType;
 use App\Entity\PropertySearch;
 use App\Form\PropertySearchType;
-use App\Notification\ContactNotification;
 use App\Repository\PropertyRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Notification\ContactNotification;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -46,15 +46,9 @@ class PropertyController extends AbstractController
         $search = new PropertySearch();
         $form = $this->createForm(PropertySearchType::class, $search);
         $form->handleRequest($request);
-
-        $properties = $paginator->paginate(
-            $this->repository->findAllVisibleQuery($search),
-            $request->query->getInt('page', 1),
-            12
-        );
         return $this->render('property/index.html.twig', [
             'current_menu' => 'properties',
-            'properties' => $properties,
+            'properties' => $this->repository->paginateAllVisible($search, $request->query->getInt('page', 1)),
             'form' => $form->createView()
         ]);
     }

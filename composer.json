@@ -6,6 +6,7 @@
         "ext-ctype": "*",
         "ext-iconv": "*",
         "beberlei/doctrineextensions": "^1.2",
+        "cache/apcu-adapter": "^1.0",
         "cocur/slugify": "^4.0",
         "composer/package-versions-deprecated": "^1.11",
         "doctrine/annotations": "^1.0",
@@ -44,8 +45,9 @@
         "symfony/web-link": "5.1.*",
         "symfony/webpack-encore-bundle": "^1.7",
         "symfony/yaml": "5.1.*",
+        "twig/cache-extension": "*",
         "twig/extra-bundle": "^2.12|^3.0",
-        "twig/twig": "^2.12|^3.0",
+        "twig/twig": "^2.0|^3.0",
         "vich/uploader-bundle": "^1.15"
     },
     "require-dev": {
@@ -55,7 +57,9 @@
         "symfony/debug-bundle": "^5.1",
         "symfony/maker-bundle": "^1.0",
         "symfony/phpunit-bridge": "^5.1",
-        "symfony/var-dumper": "^5.1"
+        "symfony/stopwatch": "^5.1",
+        "symfony/var-dumper": "^5.1",
+        "symfony/web-profiler-bundle": "^5.1"
     },
     "config": {
         "optimize-autoloader": true,

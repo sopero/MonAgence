@@ -2,12 +2,16 @@
 
 namespace App\Repository;
 
-use Doctrine\ORM\Query;
+use App\Entity\Picture;
 use App\Entity\Property;
 use App\Entity\PropertySearch;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
+use Knp\Component\Pager\PaginatorInterface;
+use Knp\Component\Pager\Pagination\PaginationInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Symfony\Bridge\Doctrine\RegistryInterface;
+
 
 /**
  * @method Property|null find($id, $lockMode = null, $lockVersion = null)
@@ -17,16 +21,22 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
  */
 class PropertyRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, Property::class);
-    }
-
 
     /**
-     * @return Query
+     * @var PaginatorInterface
      */
-    public function findAllVisibleQuery(PropertySearch $search): Query
+    private $paginator;
+
+    public function __construct(ManagerRegistry $registry, PaginatorInterface $paginator)
+    {
+        parent::__construct($registry, Property::class);
+        $this->paginator = $paginator;
+    }
+
+    /**
+     * @return PaginationInterface
+     */
+    public function paginateAllVisible(PropertySearch $search, int $page): PaginationInterface
     {
         $query = $this->findVisibleQuery();
 
@@ -40,13 +50,10 @@ class PropertyRepository extends ServiceEntityRepository
         if ($search->getLat() && $search->getLng())
         {
             $query = $query
-                ->select('p')
                 ->andWhere('(6353 * 2 * ASIN(SQRT( POWER(SIN((p.lat - :lat) *  pi()/180 / 2), 2) +COS(p.lat * pi()/180) * COS(:lat * pi()/180) * POWER(SIN((p.lng - :lng) * pi()/180 / 2), 2) ))) <= :distance')
                 ->setParameter('lng', $search->getLng())
                 ->setParameter('lat', $search->getLat())
                 ->setParameter('distance', $search->getDistance());
-
-
         }
 
         
@@ -69,7 +76,15 @@ class PropertyRepository extends ServiceEntityRepository
             }
         }
 
-        return $query->getQuery();
+        $properties = $this->paginator->paginate(
+            $query->getQuery(),
+            $page,
+            12
+        );
+
+        $this->hydratePicture($properties);
+
+        return $properties;
     }
 
     /**
@@ -77,10 +92,12 @@ class PropertyRepository extends ServiceEntityRepository
      */
     public function findLatest(): array
     {
-        return $this->findVisibleQuery()
+        $properties = $this->findVisibleQuery()
             ->setMaxResults(4)
             ->getQuery()
             ->getResult();
+        $this->hydratePicture($properties);
+        return $properties;
     }
 
     private function findVisibleQuery(): QueryBuilder
@@ -89,33 +106,17 @@ class PropertyRepository extends ServiceEntityRepository
             ->where('p.sold = false');
     }
 
-
-    // /**
-    //  * @return Property[] Returns an array of Property objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('p.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
+    private function hydratePicture($properties) {
+        if (method_exists($properties, 'getItems')) {
+            $properties = $properties->getItems();
+        }
+        $pictures = $this->getEntityManager()->getRepository(Picture::class)->findForProperties($properties);
+        foreach($properties as $property) {
+            /** @var $property Property */
+            if($pictures->containsKey($property->getId())) {
+                $property->setPicture($pictures->get($property->getId()));
+            }
+        }
     }
-    */
 
-    /*
-    public function findOneBySomeField($value): ?Property
-    {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }
