@@ -1,6 +1,5 @@
 # MonAgence
-
-#Symfony
+## App Symfony
 
 Application simulant une agence immobilière, avec quelques fonctionnalités intéressantes comme :
 
